@@ -20,21 +20,18 @@ def parse_item(url, cache=None):
         cached = cache[url]
     else:
         cached = None
+
     resp = requests.get(url, headers=HEADERS)
     rv = resp.json()
     html = SCRIPT_PATTERN.sub('', rv['body'])
     html = AVATAR_PATTERN.sub('', html)
+
     if cached and cached['body'] == html:
         logger.info('Find cache - %s' % url)
         return cached
 
     now = datetime.datetime.utcnow()
     now = now.strftime('%Y-%m-%dT%H:%M:%SZ')
-    if cached:
-        cached['updated'] = now
-        cached['body'] = html
-        logger.info('Cache update - %s' % url)
-        return cached
     logger.info('Parse end - %s' % url)
     return {
         'title': rv['title'],
