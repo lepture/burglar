@@ -15,7 +15,7 @@ AVATAR_PATTERN = re.compile(r'<img\s.*?avatar.*?>')
 
 
 def parse_item(url, cache=None):
-    logger.info('Parse start - %s' % url)
+    logger.debug('Parse start - %s' % url)
     if cache and url in cache:
         cached = cache[url]
     else:
@@ -27,12 +27,12 @@ def parse_item(url, cache=None):
     html = AVATAR_PATTERN.sub('', html)
 
     if cached and cached['body'] == html:
-        logger.info('Find cache - %s' % url)
+        logger.debug('Find cache - %s' % url)
         return cached
 
     now = datetime.datetime.utcnow()
     now = now.strftime('%Y-%m-%dT%H:%M:%SZ')
-    logger.info('Parse end - %s' % url)
+    logger.debug('Parse end - %s' % url)
     return {
         'title': rv['title'],
         'url': rv['share_url'],

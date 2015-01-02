@@ -14,7 +14,7 @@ HEADERS = {'User-Agent': 'Mozilla/5.0 (compatible; Burglar)'}
 
 
 def parse_item(key, url, cache=None):
-    logger.info('Parse start - %s' % url)
+    logger.debug('Parse start - %s' % url)
     if cache and url in cache:
         cached = cache[url]
     else:
@@ -33,7 +33,7 @@ def parse_item(key, url, cache=None):
     body = html.tostring(el_content, encoding='unicode')
 
     if cached and cached['body'] == body:
-        logger.info('Find cache - %s' % url)
+        logger.debug('Find cache - %s' % url)
         return cached
 
     el_title = el.get_element_by_id('activity-name')
@@ -46,7 +46,7 @@ def parse_item(key, url, cache=None):
     now = datetime.datetime.utcnow()
     now = now.strftime('%Y-%m-%dT%H:%M:%SZ')
 
-    logger.info('Parse end - %s' % url)
+    logger.debug('Parse end - %s' % url)
     return {
         'title': title,
         'url': url,

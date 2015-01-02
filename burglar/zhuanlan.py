@@ -9,7 +9,7 @@ HEADERS = {'User-Agent': 'Mozilla/5.0 (compatible; Burglar)'}
 
 
 def parse_item(href, cache=None):
-    logger.info('Parse start - %s' % href)
+    logger.debug('Parse start - %s' % href)
     if cache and href in cache:
         cached = cache[href]
     else:
@@ -22,13 +22,13 @@ def parse_item(href, cache=None):
     url = 'http://zhuanlan.zhihu.com' + rv['url']
 
     if cached and cached['body'] == rv['content']:
-        logger.info('Find cache - %s' % href)
+        logger.debug('Find cache - %s' % href)
         return cached
 
     now = datetime.datetime.utcnow()
     now = now.strftime('%Y-%m-%dT%H:%M:%SZ')
 
-    logger.info('Parse end - %s' % url)
+    logger.debug('Parse end - %s' % url)
     return {
         'title': rv['title'],
         'url': url,
