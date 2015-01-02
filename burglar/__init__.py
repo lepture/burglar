@@ -10,7 +10,7 @@ import os
 from . import daily, zhuanlan, weixin
 from .utils import write_feed, logger
 
-__version__ = '0.1'
+__version__ = '0.2'
 __author__ = 'Hsiaoming Yang <me@lepture.com>'
 
 
