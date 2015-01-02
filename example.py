@@ -1,6 +1,15 @@
 # coding: utf-8
 
-from burglar import Burglar
+import logging
+from burglar import Burglar, logger
+
+formatter = logging.Formatter(
+    '[%(asctime)s %(levelname)s %(filename)s:%(lineno)d]: %(message)s'
+)
+handler = logging.StreamHandler()
+handler.setFormatter(formatter)
+logger.addHandler(handler)
+logger.setLevel(logging.INFO)
 
 
 site = Burglar('_site')
