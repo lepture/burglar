@@ -25,10 +25,13 @@ def parse_item(key, url, cache=None):
     el = html.fromstring(text)
     el_content = el.get_element_by_id('js_content')
 
-    for img in el_content.xpath('*/img'):
+    for img in el_content.xpath('*//img'):
         src = img.get('data-src')
         img.set('src', src)
         img.attrib.pop('data-src', None)
+        img.attrib.pop('data-w', None)
+        img.attrib.pop('data-s', None)
+        img.attrib.pop('data-ratio', None)
 
     # clean style
     for tag in el_content.xpath('//*[@style]'):
