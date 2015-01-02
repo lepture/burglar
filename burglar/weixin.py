@@ -2,6 +2,7 @@
 
 import re
 import json
+import datetime
 import requests
 from lxml import etree, html
 from .utils import read_cache, write_cache, get_cache_file, logger
@@ -14,29 +15,44 @@ HEADERS = {'User-Agent': 'Mozilla/5.0 (compatible; Burglar)'}
 
 def parse_item(key, url, cache=None):
     logger.info('Parse start - %s' % url)
-    if cache and key in cache:
-        logger.info('Find cache - %s' % url)
-        return cache[key]
+    if cache and url in cache:
+        cached = cache[url]
+    else:
+        cached = None
+
     resp = requests.get(url, headers=HEADERS)
     text = resp.text.encode('utf-8')
     el = html.fromstring(text)
-    el_title = el.get_element_by_id('activity-name')
-    title = el_title.text
-    el_date = el.get_element_by_id('post-date')
-    published = el_date.text
     el_content = el.get_element_by_id('js_content')
+
     for img in el_content.findall('*/img'):
         src = img.get('data-src')
         img.set('src', src)
         img.set('data-src', '')
+
     body = html.tostring(el_content, encoding='unicode')
+
+    if cached and cached['body'] == body:
+        logger.info('Find cache - %s' % url)
+        return cached
+
+    el_title = el.get_element_by_id('activity-name')
+    el_date = el.get_element_by_id('post-date')
+
+    title = el_title.text
+    published = el_date.text
+    published = '%sT00:00:00Z' % published.strip()
+
+    now = datetime.datetime.utcnow()
+    now = now.strftime('%Y-%m-%dT%H:%M:%SZ')
+
     logger.info('Parse end - %s' % url)
     return {
         'title': title,
         'url': url,
         'body': body,
         'published': published,
-        'updated': published,
+        'updated': now,
     }
 
 
