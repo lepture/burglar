@@ -41,6 +41,8 @@ class Burglar(object):
     def parse_weixin(self, item):
         name = item['name']
         feed = weixin.parse(item['title'], item['openid'])
+        if 'url' in item:
+            feed['url'] = item['url']
         dest = os.path.join(self.sitedir, 'weixin', name + '.xml')
         return feed, dest
 
