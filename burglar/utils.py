@@ -4,6 +4,7 @@ import os
 import json
 import logging
 import tempfile
+from xml.sax.saxutils import escape
 from requests.compat import bytes, str
 
 logger = logging.getLogger('burglar')
@@ -60,8 +61,8 @@ def write_cache(cache_file, cache, keys=None):
 def _iter_entry(entry):
     yield u'<entry>'
     yield u'<title><![CDATA[%s]]></title>' % to_unicode(entry['title'])
-    yield u'<link href="%s"/>' % to_unicode(entry['url'])
-    yield u'<id>%s</id>' % to_unicode(entry['url'])
+    yield u'<link href="%s"/>' % to_unicode(escape(entry['url']))
+    yield u'<id><![CDATA[%s]]></id>' % to_unicode(entry['url'])
 
     if 'author' in entry:
         yield u'<author><name>%s</name></author>' % to_unicode(entry['author'])
@@ -71,7 +72,7 @@ def _iter_entry(entry):
     if 'published' in entry:
         yield u'<published>%s</published>' % to_unicode(entry['published'])
 
-    yield u'<content type="html"><![CDATA[%s]]></content>' % \
+    yield u'<content type="html"><![CDATA[ %s ]]></content>' % \
         to_unicode(entry['body'])
     yield u'</entry>'
 
@@ -80,8 +81,8 @@ def _iter_feed(feed):
     yield u'<?xml version="1.0" encoding="utf-8"?>'
     yield u'<feed xmlns="http://www.w3.org/2005/Atom">'
     yield u'<title><![CDATA[%s]]></title>' % to_unicode(feed['title'])
-    yield u'<link href="%s" />' % to_unicode(feed['url'])
-    yield u'<id>%s</id>' % to_unicode(feed['url'])
+    yield u'<link href="%s" />' % to_unicode(escape(feed['url']))
+    yield u'<id><![CDATA[%s]]></id>' % to_unicode(feed['url'])
     entries = feed['entries']
     item = entries[0]
     yield u'<updated>%s</updated>' % to_unicode(item['updated'])
