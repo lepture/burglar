@@ -4,6 +4,14 @@ Changelog
 Here is the full history of Burglar.
 
 
+Version 0.2.1
+~~~~~~~~~~~~~
+
+Released on Jan 2, 2015.
+
+* Fix setup script
+
+
 Version 0.2
 ~~~~~~~~~~~
 
