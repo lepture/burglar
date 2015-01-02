@@ -19,29 +19,42 @@ class Burglar(object):
 
     :param sitedir: directory for storing feed files.
     """
+    PARSERS = ['daily', 'zhuanlan', 'weixin']
+
     def __init__(self, sitedir):
         self.sitedir = sitedir
 
     def __call__(self, item):
         self.feed(item)
 
+    def parse_daily(self, item):
+        feed = daily.parse()
+        dest = os.path.join(self.sitedir, 'zhihu', 'daily.xml')
+        return feed, dest
+
+    def parse_zhuanlan(self, item):
+        name = item['name']
+        feed = zhuanlan.parse(item['title'], name)
+        dest = os.path.join(self.sitedir, 'zhihu', name + '.xml')
+        return feed, dest
+
+    def parse_weixin(self, item):
+        name = item['name']
+        feed = weixin.parse(item['title'], item['openid'])
+        dest = os.path.join(self.sitedir, 'weixin', name + '.xml')
+        return feed, dest
+
     def feed(self, item):
         assert 'type' in item
         item_type = item['type']
+        assert item_type in self.PARSERS
         if item_type == 'daily':
             name = 'daily'
-            dest = os.path.join(self.sitedir, 'zhihu', name + '.xml')
-            feed = daily.parse()
-        elif item_type == 'zhuanlan':
-            name = item['name']
-            dest = os.path.join(self.sitedir, 'zhihu', name + '.xml')
-            feed = zhuanlan.parse(item['title'], name)
-        elif item_type == 'weixin':
-            name = item['name']
-            dest = os.path.join(self.sitedir, 'weixin', name + '.xml')
-            feed = weixin.parse(item['title'], item['openid'])
         else:
-            raise ValueError('Invalid item type')
+            name = item['name']
+
         logger.info('Feeding %s - %s' % (item_type, name))
+        parser = getattr(self, 'parse_%s' % item_type)
+        feed, dest = parser(item)
         write_feed(feed, dest)
         logger.info('Finished %s - %s' % (item_type, name))
