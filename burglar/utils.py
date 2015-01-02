@@ -44,40 +44,37 @@ def write_cache(cache_file, cache, keys=None):
         json.dump(cache, f)
 
 
-class FeedWriter(object):
-    def __init__(self, feed):
-        self.feed = feed
+def _write_entry(entry):
+    yield '<entry>'
+    yield '<title><![CDATA[%s]]></title>' % entry['title']
+    yield '<link href="%s"/>' % entry['url']
+    yield '<id>%s</id>' % entry['url']
 
-    def write_feed(self):
-        feed = self.feed
-        yield '<?xml version="1.0" encoding="utf-8"?>'
-        yield '<feed xmlns="http://www.w3.org/2005/Atom">'
-        yield '<title><![CDATA[%s]]></title>' % feed['title']
-        yield '<link href="%s" />' % feed['url']
-        yield '<id>%s</id>' % feed['url']
-        entries = feed['entries']
-        item = entries[0]
-        yield '<updated>%s</updated>' % item['updated']
-        for entry in entries:
-            yield ''.join(list(self.write_entry(entry)))
-        yield '</feed>'
+    if 'author' in entry:
+        yield '<author><name>%s</name></author>' % entry['author']
 
-    def write_entry(self, entry):
-        yield '<entry>'
-        yield '<title><![CDATA[%s]]></title>' % entry['title']
-        yield '<link href="%s"/>' % entry['url']
-        yield '<id>%s</id>' % entry['url']
+    if 'updated' in entry:
+        yield '<updated>%s</updated>' % entry['updated']
+    if 'published' in entry:
+        yield '<published>%s</published>' % entry['published']
 
-        if 'author' in entry:
-            yield '<author><name>%s</name></author>' % entry['author']
+    yield '<content type="html"><![CDATA[%s]]></content>' % entry['body']
+    yield '</entry>'
 
-        if 'updated' in entry:
-            yield '<updated>%s</updated>' % entry['updated']
-        if 'published' in entry:
-            yield '<published>%s</published>' % entry['published']
 
-        yield '<content type="html"><![CDATA[%s]]></content>' % entry['body']
-        yield '</entry>'
+def _write_feed(feed):
+    yield '<?xml version="1.0" encoding="utf-8"?>'
+    yield '<feed xmlns="http://www.w3.org/2005/Atom">'
+    yield '<title><![CDATA[%s]]></title>' % feed['title']
+    yield '<link href="%s" />' % feed['url']
+    yield '<id>%s</id>' % feed['url']
+    entries = feed['entries']
+    item = entries[0]
+    yield '<updated>%s</updated>' % item['updated']
+    for entry in entries:
+        yield ''.join(list(_write_entry(entry)))
+    yield '</feed>'
 
-    def output(self):
-        return ''.join(list(self.write_feed()))
+
+def create_feed(feed):
+    return ''.join(list(_write_feed(feed)))
