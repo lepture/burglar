@@ -1,11 +1,24 @@
 # coding: utf-8
+"""
+    burglar
+    ~~~~~~~
+
+    Let's steal something and publish it.
+"""
 
 import os
 from . import zhihu_daily, zhihu_zhuanlan, weixin
 from .utils import write_feed
 
+__version__ = '0.1'
+__author__ = 'Hsiaoming Yang <me@lepture.com>'
+
 
 class Burglar(object):
+    """A burglar rob in the night.
+
+    :param sitedir: directory for storing feed files.
+    """
     def __init__(self, sitedir):
         self.sitedir = sitedir
 
