@@ -15,10 +15,8 @@ HEADERS = {'User-Agent': 'Mozilla/5.0 (compatible; Burglar)'}
 
 def parse_item(key, url, cache=None):
     logger.debug('Parse start - %s' % url)
-    if cache and url in cache:
-        cached = cache[url]
-    else:
-        cached = None
+    if cache and key in cache:
+        return cache[key]
 
     resp = requests.get(url, headers=HEADERS)
     text = resp.text.encode('utf-8')
@@ -39,11 +37,6 @@ def parse_item(key, url, cache=None):
         tag.attrib.pop('style', None)
 
     body = html.tostring(el_content, encoding='unicode')
-
-    if cached and cached['body'] == body:
-        logger.debug('Find cache - %s' % url)
-        return cached
-
     el_title = el.get_element_by_id('activity-name')
     el_date = el.get_element_by_id('post-date')
 
@@ -73,9 +66,10 @@ def parse_xml(text):
     return el_id.text, el_url.text
 
 
-def parse(title, openid, cache_file=None):
-    cache_file = get_cache_file(cache_file, openid + '.json')
-    cache = read_cache(cache_file)
+def parse(title, openid, use_cache=True):
+    cache_file = get_cache_file(openid + '.json')
+    cache = read_cache(cache_file, use_cache)
+
     index_url = INDEX_BASE + openid
     resp = requests.get(index_url, headers=HEADERS)
     text = resp.text

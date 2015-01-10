@@ -11,19 +11,13 @@ HEADERS = {'User-Agent': 'Mozilla/5.0 (compatible; Burglar)'}
 def parse_item(href, cache=None):
     logger.debug('Parse start - %s' % href)
     if cache and href in cache:
-        cached = cache[href]
-    else:
-        cached = None
+        return cache[href]
 
     api_url = 'http://zhuanlan.zhihu.com' + href
     resp = requests.get(api_url, headers=HEADERS)
     rv = resp.json()
     author = rv['author']['name']
     url = 'http://zhuanlan.zhihu.com' + rv['url']
-
-    if cached and cached['body'] == rv['content']:
-        logger.debug('Find cache - %s' % href)
-        return cached
 
     now = datetime.datetime.utcnow()
     now = now.strftime('%Y-%m-%dT%H:%M:%SZ')
@@ -39,9 +33,9 @@ def parse_item(href, cache=None):
     }
 
 
-def parse(title, name, cache_file=None):
-    cache_file = get_cache_file(cache_file, 'zhihu-daily.json')
-    cache = read_cache(cache_file)
+def parse(title, name, use_cache=True):
+    cache_file = get_cache_file('zhihu-' + name + '.json')
+    cache = read_cache(cache_file, use_cache)
 
     index_url = 'http://zhuanlan.zhihu.com/api/columns/%s/posts' % name
     resp = requests.get(index_url, headers=HEADERS)

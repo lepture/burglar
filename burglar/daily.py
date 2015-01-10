@@ -17,18 +17,12 @@ AVATAR_PATTERN = re.compile(r'<img\s.*?avatar.*?>')
 def parse_item(url, cache=None):
     logger.debug('Parse start - %s' % url)
     if cache and url in cache:
-        cached = cache[url]
-    else:
-        cached = None
+        return cache[url]
 
     resp = requests.get(url, headers=HEADERS)
     rv = resp.json()
     html = SCRIPT_PATTERN.sub('', rv['body'])
     html = AVATAR_PATTERN.sub('', html)
-
-    if cached and cached['body'] == html:
-        logger.debug('Find cache - %s' % url)
-        return cached
 
     now = datetime.datetime.utcnow()
     now = now.strftime('%Y-%m-%dT%H:%M:%SZ')
@@ -42,9 +36,9 @@ def parse_item(url, cache=None):
     }
 
 
-def parse(cache_file=None):
-    cache_file = get_cache_file(cache_file, 'zhihu-daily.json')
-    cache = read_cache(cache_file)
+def parse(use_cache=True):
+    cache_file = get_cache_file('zhihu-daily.json')
+    cache = read_cache(cache_file, use_cache)
 
     resp = requests.get(INDEX_URL, headers=HEADERS)
     rv = resp.json()

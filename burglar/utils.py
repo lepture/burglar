@@ -29,14 +29,13 @@ def clean_cache(cache, keys):
     return rv
 
 
-def get_cache_file(cache_file, name):
-    if cache_file:
-        return cache_file
-    cache_file = os.path.join(tempfile.gettempdir(), name)
-    return cache_file
+def get_cache_file(name):
+    return os.path.join(tempfile.gettempdir(), 'burglar', name)
 
 
-def read_cache(cache_file):
+def read_cache(cache_file, use_cache=True):
+    if not use_cache:
+        return {}
     if not os.path.isfile(cache_file):
         return {}
     try:
