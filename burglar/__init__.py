@@ -27,26 +27,26 @@ class Burglar(object):
     def __call__(self, item):
         self.feed(item)
 
-    def parse_daily(self, item):
-        feed = daily.parse()
+    def parse_daily(self, item, use_cache=True):
+        feed = daily.parse(use_cache)
         dest = os.path.join(self.sitedir, 'zhihu', 'daily.xml')
         return feed, dest
 
-    def parse_zhuanlan(self, item):
+    def parse_zhuanlan(self, item, use_cache=True):
         name = item['name']
-        feed = zhuanlan.parse(item['title'], name)
+        feed = zhuanlan.parse(item['title'], name, use_cache)
         dest = os.path.join(self.sitedir, 'zhihu', name + '.xml')
         return feed, dest
 
-    def parse_weixin(self, item):
+    def parse_weixin(self, item, use_cache=True):
         name = item['name']
-        feed = weixin.parse(item['title'], item['openid'])
+        feed = weixin.parse(item['title'], item['openid'], use_cache)
         if 'url' in item:
             feed['url'] = item['url']
         dest = os.path.join(self.sitedir, 'weixin', name + '.xml')
         return feed, dest
 
-    def feed(self, item):
+    def feed(self, item, use_cache=True):
         assert 'type' in item
         item_type = item['type']
         assert item_type in self.PARSERS
@@ -57,6 +57,6 @@ class Burglar(object):
 
         logger.info('Feeding %s - %s' % (item_type, name))
         parser = getattr(self, 'parse_%s' % item_type)
-        feed, dest = parser(item)
+        feed, dest = parser(item, use_cache)
         write_feed(feed, dest)
         logger.info('Finished %s - %s' % (item_type, name))
