@@ -98,5 +98,5 @@ def write_feed(feed, output):
         os.makedirs(folder)
 
     content = to_bytes(content)
-    with open(output, 'w') as f:
+    with open(output, 'wb') as f:
         f.write(content)
