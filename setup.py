@@ -4,6 +4,11 @@
 import re
 from setuptools import setup
 
+try:
+    import multiprocessing
+except ImportError:
+    pass
+
 
 def fread(filepath):
     with open(filepath, 'r') as f:
@@ -36,6 +41,8 @@ setup(
     zip_safe=False,
     platforms='any',
     install_requires=install_requires,
+    tests_require=['nose'],
+    test_suite='nose.collector',
     classifiers=[
         'Development Status :: 3 - Alpha',
         'Environment :: Web Environment',
