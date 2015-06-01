@@ -25,6 +25,7 @@ def version():
 install_requires = [
     'requests',
     'lxml',
+    'pycrypto',
 ]
 
 

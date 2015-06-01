@@ -8,6 +8,7 @@ import requests
 from Crypto.Cipher import AES
 from lxml import etree, html
 from .utils import read_cache, write_cache, get_cache_file, logger
+from .utils import to_bytes, to_unicode
 
 SITE_BASE = 'http://weixin.sogou.com/gzh?openid='
 INDEX_BASE = 'http://weixin.sogou.com/gzhjs?openid='
@@ -136,10 +137,11 @@ def _cipher_eqs(key, secret, setting='sogou'):
     length = 16 - (len(data) % 16)
     data += chr(length) * length
 
-    IV = '0000000000000000'
-    cipher = AES.new(key, AES.MODE_CBC, IV)
+    IV = b'0000000000000000'
+    cipher = AES.new(to_bytes(key), AES.MODE_CBC, IV)
     # encrypt data
-    data = base64.b64encode(cipher.encrypt(data))
+    data = cipher.encrypt(to_bytes(data))
+    data = to_unicode(base64.b64encode(data))
 
     # function e
     rv = ''
