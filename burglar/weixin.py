@@ -2,8 +2,10 @@
 
 import re
 import json
+import base64
 import datetime
 import requests
+from Crypto.Cipher import AES
 from lxml import etree, html
 from .utils import read_cache, write_cache, get_cache_file, logger
 
@@ -49,9 +51,9 @@ def parse_item(key, url, cache=None):
 
     logger.debug('Parse end - %s' % url)
     return {
-        'title': title,
+        'title': title.strip(),
         'url': url,
-        'body': body,
+        'body': body.strip(),
         'published': published,
         'updated': now,
     }
@@ -70,8 +72,27 @@ def parse(title, openid, use_cache=True):
     cache_file = get_cache_file(openid + '.json')
     cache = read_cache(cache_file, use_cache)
 
-    index_url = INDEX_BASE + openid
-    resp = requests.get(index_url, headers=HEADERS)
+    site_url = SITE_BASE + openid
+    resp = requests.get(site_url, headers=HEADERS)
+
+    pattern = (
+        r'SogouEncrypt.setKv\("(\w+)","(\d)"\)'
+        r'.*?'
+        r'SogouEncrypt.encryptquery\("(\w+)","(\w+)"\)'
+    )
+    m = re.findall(pattern, resp.text, re.S)
+    key, level, secret, setting = m[0]
+
+    # index_url = INDEX_BASE + openid
+    resp = requests.get(
+        'http://weixin.sogou.com/gzhjs',
+        params={
+            'openid': openid,
+            'eqs': _cipher_eqs(key, secret, setting),
+            'ekv': level,
+        },
+        headers=HEADERS,
+    )
     text = resp.text
     start = text.find('(') + 1
     end = text.rfind(')')
@@ -89,3 +110,43 @@ def parse(title, openid, use_cache=True):
     write_cache(cache_file, cache, keys)
     url = SITE_BASE + openid
     return {'title': title, 'url': url, 'entries': entries}
+
+
+def _cipher_eqs(key, secret, setting='sogou'):
+    assert len(key) == 11
+
+    ss = setting.split('-')
+
+    # function g
+    if len(ss) > 2:
+        h = ss[2]
+    else:
+        h = ss[0]
+
+    # function f
+    if len(h) > 5:
+        n = h[:-5]
+    else:
+        n = h + (5 - len(h)) * 's'
+
+    key += n
+
+    data = secret + 'hdq=' + setting
+    # padding data
+    length = 16 - (len(data) % 16)
+    data += chr(length) * length
+
+    IV = '0000000000000000'
+    cipher = AES.new(key, AES.MODE_CBC, IV)
+    # encrypt data
+    data = base64.b64encode(cipher.encrypt(data))
+
+    # function e
+    rv = ''
+    i = 0
+    for m in range(len(data)):
+        rv += data[m]
+        if (m == pow(2, i)) and i < 5:
+            rv += n[i]
+            i += 1
+    return rv
